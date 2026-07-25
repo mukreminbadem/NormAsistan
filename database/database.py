@@ -4,13 +4,16 @@ from sqlalchemy.orm import sessionmaker
 from database.models import (
     Base,
     Alan,
+    Sube,
+    Brans,
     Ders,
-    DersCizelgesi
+    DersCizelgesi,
+    DersDetay
 )
 
-# -------------------------------
-# Veritabanı Bağlantısı
-# -------------------------------
+# ==================================================
+# VERİTABANI
+# ==================================================
 
 engine = create_engine(
     "sqlite:///data/normasistan.db",
@@ -57,6 +60,77 @@ def alan_ekle(alan_adi):
 
 
 # ==================================================
+# ŞUBELER
+# ==================================================
+
+def subeleri_getir():
+
+    session = Session()
+
+    subeler = (
+        session.query(Sube)
+        .filter(Sube.aktif == True)
+        .order_by(Sube.sinif, Sube.sube)
+        .all()
+    )
+
+    session.close()
+
+    return subeler
+
+
+def sube_ekle(sinif, sube, alan_id, ogrenci_sayisi):
+
+    session = Session()
+
+    yeni = Sube(
+        sinif=sinif,
+        sube=sube,
+        alan_id=alan_id,
+        ogrenci_sayisi=ogrenci_sayisi,
+        aktif=True
+    )
+
+    session.add(yeni)
+    session.commit()
+    session.close()
+
+
+# ==================================================
+# BRANŞLAR
+# ==================================================
+
+def branslari_getir():
+
+    session = Session()
+
+    branslar = (
+        session.query(Brans)
+        .filter(Brans.aktif == True)
+        .order_by(Brans.brans_adi)
+        .all()
+    )
+
+    session.close()
+
+    return branslar
+
+
+def brans_ekle(brans_adi):
+
+    session = Session()
+
+    brans = Brans(
+        brans_adi=brans_adi,
+        aktif=True
+    )
+
+    session.add(brans)
+    session.commit()
+    session.close()
+
+
+# ==================================================
 # DERSLER
 # ==================================================
 
@@ -66,6 +140,7 @@ def dersleri_getir():
 
     dersler = (
         session.query(Ders)
+        .filter(Ders.aktif == True)
         .order_by(Ders.ders_adi)
         .all()
     )
@@ -75,13 +150,16 @@ def dersleri_getir():
     return dersler
 
 
-def ders_ekle(ders_adi, kategori):
+def ders_ekle(ders_adi, kategori, brans_id=None, secmeli=False):
 
     session = Session()
 
     ders = Ders(
         ders_adi=ders_adi,
-        kategori=kategori
+        kategori=kategori,
+        brans_id=brans_id,
+        secmeli=secmeli,
+        aktif=True
     )
 
     session.add(ders)
@@ -97,16 +175,19 @@ def cizelgeleri_getir():
 
     session = Session()
 
-    cizelgeler = (
+    liste = (
         session.query(DersCizelgesi)
         .filter(DersCizelgesi.aktif == True)
-        .order_by(DersCizelgesi.yil.desc())
+        .order_by(
+            DersCizelgesi.yil.desc(),
+            DersCizelgesi.adi
+        )
         .all()
     )
 
     session.close()
 
-    return cizelgeler
+    return liste
 
 
 def cizelge_ekle(adi, program, yil):
@@ -121,5 +202,52 @@ def cizelge_ekle(adi, program, yil):
     )
 
     session.add(cizelge)
+    session.commit()
+    session.close()
+
+
+# ==================================================
+# DERS ÇİZELGESİ DETAYLARI
+# ==================================================
+
+def cizelge_detayi_getir(cizelge_id):
+
+    session = Session()
+
+    detaylar = (
+        session.query(DersDetay)
+        .filter(DersDetay.cizelge_id == cizelge_id)
+        .order_by(
+            DersDetay.sinif,
+            DersDetay.ders_id
+        )
+        .all()
+    )
+
+    session.close()
+
+    return detaylar
+
+
+def cizelge_detay_ekle(
+        cizelge_id,
+        ders_id,
+        sinif,
+        haftalik_saat,
+        teorik=0,
+        uygulama=0):
+
+    session = Session()
+
+    detay = DersDetay(
+        cizelge_id=cizelge_id,
+        ders_id=ders_id,
+        sinif=sinif,
+        haftalik_saat=haftalik_saat,
+        teorik=teorik,
+        uygulama=uygulama
+    )
+
+    session.add(detay)
     session.commit()
     session.close()
