@@ -3,97 +3,141 @@ from sqlalchemy import (
     Integer,
     String,
     Boolean,
-    ForeignKey
+    ForeignKey,
+    DateTime
 )
 
 from sqlalchemy.orm import declarative_base
+from datetime import datetime
 
 Base = declarative_base()
 
 
-# ==================================================
-# ALANLAR
-# ==================================================
+# ==========================================================
+# ORTAK ALANLAR
+# ==========================================================
 
-class Alan(Base):
+class OrtakAlanlar:
+
+    aktif = Column(
+        Boolean,
+        default=True,
+        nullable=False
+    )
+
+    olusturma_tarihi = Column(
+        DateTime,
+        default=datetime.now
+    )
+
+    guncelleme_tarihi = Column(
+        DateTime,
+        default=datetime.now,
+        onupdate=datetime.now
+    )
+
+
+# ==========================================================
+# ALANLAR
+# ==========================================================
+
+class Alan(Base, OrtakAlanlar):
+
     __tablename__ = "alanlar"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True
+    )
 
     alan_adi = Column(
-        String,
+        String(100),
         unique=True,
         nullable=False
     )
 
-    aktif = Column(
-        Boolean,
-        default=True
-    )
 
-
-# ==================================================
+# ==========================================================
 # ŞUBELER
-# ==================================================
+# ==========================================================
 
-class Sube(Base):
+class Sube(Base, OrtakAlanlar):
+
     __tablename__ = "subeler"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True
+    )
 
-    sinif = Column(Integer)
+    sinif = Column(
+        Integer,
+        nullable=False
+    )
 
-    sube = Column(String)
+    sube = Column(
+        String(5),
+        nullable=False
+    )
 
     alan_id = Column(
         Integer,
         ForeignKey("alanlar.id")
     )
 
-    ogrenci_sayisi = Column(Integer)
-
-    aktif = Column(
-        Boolean,
-        default=True
+    ogrenci_sayisi = Column(
+        Integer,
+        default=0
     )
 
 
-# ==================================================
+# ==========================================================
 # BRANŞLAR
-# ==================================================
+# ==========================================================
 
-class Brans(Base):
+class Brans(Base, OrtakAlanlar):
+
     __tablename__ = "branslar"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    meb_kodu = Column(
+        String(20),
+        unique=True,
+        nullable=True
+    )
 
     brans_adi = Column(
-        String,
+        String(150),
         unique=True,
         nullable=False
     )
 
-    aktif = Column(
-        Boolean,
-        default=True
-    )
 
-
-# ==================================================
+# ==========================================================
 # DERSLER
-# ==================================================
+# ==========================================================
 
-class Ders(Base):
+class Ders(Base, OrtakAlanlar):
+
     __tablename__ = "dersler"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True
+    )
 
     ders_adi = Column(
-        String,
+        String(150),
         nullable=False
     )
 
-    kategori = Column(String)
+    kategori = Column(
+        String(50)
+    )
 
     brans_id = Column(
         Integer,
@@ -106,55 +150,70 @@ class Ders(Base):
         default=False
     )
 
-    aktif = Column(
-        Boolean,
-        default=True
-    )
 
-
-# ==================================================
+# ==========================================================
 # DERS ÇİZELGELERİ
-# ==================================================
+# ==========================================================
 
-class DersCizelgesi(Base):
+class DersCizelgesi(Base, OrtakAlanlar):
+
     __tablename__ = "ders_cizelgeleri"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True
+    )
 
-    adi = Column(String)
+    adi = Column(
+        String(150),
+        nullable=False
+    )
 
-    program = Column(String)
+    program = Column(
+        String(100),
+        nullable=False
+    )
 
-    yil = Column(String)
-
-    aktif = Column(
-        Boolean,
-        default=True
+    yil = Column(
+        String(20),
+        nullable=False
     )
 
 
-# ==================================================
-# DERS ÇİZELGESİ DETAYI
-# ==================================================
+# ==========================================================
+# DERS ÇİZELGESİ DETAYLARI
+# ==========================================================
 
 class DersDetay(Base):
+
     __tablename__ = "ders_detaylari"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True
+    )
 
     cizelge_id = Column(
         Integer,
-        ForeignKey("ders_cizelgeleri.id")
+        ForeignKey("ders_cizelgeleri.id"),
+        nullable=False
     )
 
     ders_id = Column(
         Integer,
-        ForeignKey("dersler.id")
+        ForeignKey("dersler.id"),
+        nullable=False
     )
 
-    sinif = Column(Integer)
+    sinif = Column(
+        Integer,
+        nullable=False
+    )
 
-    haftalik_saat = Column(Integer)
+    haftalik_saat = Column(
+        Integer,
+        default=0
+    )
 
     teorik = Column(
         Integer,
