@@ -5,7 +5,13 @@ from PySide6.QtWidgets import (
     QComboBox,
     QPushButton,
     QVBoxLayout,
-    QLabel
+    QLabel,
+    QMessageBox
+)
+
+from database.database import (
+    okul_getir,
+    okul_kaydet
 )
 
 
@@ -14,10 +20,22 @@ class OkulPage(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.arayuz_olustur()
+        self.verileri_yukle()
+
+    # ------------------------------------------------------
+    # ARAYÜZ
+    # ------------------------------------------------------
+
+    def arayuz_olustur(self):
+
         layout = QVBoxLayout(self)
 
-        baslik = QLabel("Okul Bilgileri")
-        baslik.setStyleSheet("font-size:22px;font-weight:bold;")
+        baslik = QLabel("🏫 Okul Bilgileri")
+        baslik.setStyleSheet("""
+            font-size:22px;
+            font-weight:bold;
+        """)
 
         layout.addWidget(baslik)
 
@@ -43,7 +61,64 @@ class OkulPage(QWidget):
 
         layout.addLayout(form)
 
-        self.btn = QPushButton("Kaydet")
+        self.btn_kaydet = QPushButton("Kaydet")
+        self.btn_kaydet.clicked.connect(self.kaydet)
 
-        layout.addWidget(self.btn)
+        layout.addWidget(self.btn_kaydet)
         layout.addStretch()
+
+    # ------------------------------------------------------
+    # VERİLERİ YÜKLE
+    # ------------------------------------------------------
+
+    def verileri_yukle(self):
+
+        okul = okul_getir()
+
+        if okul is None:
+            return
+
+        self.okul_adi.setText(okul.okul_adi)
+
+        index = self.egitim_yili.findText(
+            okul.egitim_yili
+        )
+
+        if index >= 0:
+            self.egitim_yili.setCurrentIndex(index)
+
+        index = self.okul_turu.findText(
+            okul.okul_turu
+        )
+
+        if index >= 0:
+            self.okul_turu.setCurrentIndex(index)
+
+    # ------------------------------------------------------
+    # KAYDET
+    # ------------------------------------------------------
+
+    def kaydet(self):
+
+        okul_adi = self.okul_adi.text().strip()
+
+        if okul_adi == "":
+
+            QMessageBox.warning(
+                self,
+                "Uyarı",
+                "Okul adı boş bırakılamaz."
+            )
+            return
+
+        okul_kaydet(
+            okul_adi,
+            self.egitim_yili.currentText(),
+            self.okul_turu.currentText()
+        )
+
+        QMessageBox.information(
+            self,
+            "Başarılı",
+            "Okul bilgileri kaydedildi."
+        )

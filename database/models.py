@@ -1,14 +1,15 @@
+from datetime import datetime
+
 from sqlalchemy import (
+    Boolean,
     Column,
+    DateTime,
+    ForeignKey,
     Integer,
     String,
-    Boolean,
-    ForeignKey,
-    DateTime
 )
 
-from sqlalchemy.orm import declarative_base
-from datetime import datetime
+from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
@@ -27,13 +28,15 @@ class OrtakAlanlar:
 
     olusturma_tarihi = Column(
         DateTime,
-        default=datetime.now
+        default=datetime.now,
+        nullable=False
     )
 
     guncelleme_tarihi = Column(
         DateTime,
         default=datetime.now,
-        onupdate=datetime.now
+        onupdate=datetime.now,
+        nullable=False
     )
 
 
@@ -53,8 +56,17 @@ class Alan(Base, OrtakAlanlar):
     alan_adi = Column(
         String(100),
         unique=True,
+        index=True,
         nullable=False
     )
+
+    subeler = relationship(
+        "Sube",
+        back_populates="alan"
+    )
+
+    def __repr__(self):
+        return f"<Alan(id={self.id}, ad='{self.alan_adi}')>"
 
 
 # ==========================================================
@@ -82,13 +94,23 @@ class Sube(Base, OrtakAlanlar):
 
     alan_id = Column(
         Integer,
-        ForeignKey("alanlar.id")
+        ForeignKey("alanlar.id"),
+        nullable=True
     )
 
     ogrenci_sayisi = Column(
         Integer,
-        default=0
+        default=0,
+        nullable=False
     )
+
+    alan = relationship(
+        "Alan",
+        back_populates="subeler"
+    )
+
+    def __repr__(self):
+        return f"<Sube({self.sinif}/{self.sube})>"
 
 
 # ==========================================================
@@ -107,14 +129,24 @@ class Brans(Base, OrtakAlanlar):
     meb_kodu = Column(
         String(20),
         unique=True,
+        index=True,
         nullable=True
     )
 
     brans_adi = Column(
         String(150),
         unique=True,
+        index=True,
         nullable=False
     )
+
+    dersler = relationship(
+        "Ders",
+        back_populates="brans"
+    )
+
+    def __repr__(self):
+        return f"<Brans('{self.brans_adi}')>"
 
 
 # ==========================================================
@@ -132,11 +164,13 @@ class Ders(Base, OrtakAlanlar):
 
     ders_adi = Column(
         String(150),
+        index=True,
         nullable=False
     )
 
     kategori = Column(
-        String(50)
+        String(50),
+        nullable=True
     )
 
     brans_id = Column(
@@ -147,9 +181,55 @@ class Ders(Base, OrtakAlanlar):
 
     secmeli = Column(
         Boolean,
-        default=False
+        default=False,
+        nullable=False
     )
 
+    brans = relationship(
+        "Brans",
+        back_populates="dersler"
+    )
+
+    detaylar = relationship(
+        "DersDetay",
+        back_populates="ders"
+    )
+
+    def __repr__(self):
+        return f"<Ders('{self.ders_adi}')>"
+
+# ==========================================================
+# OKUL
+# ==========================================================
+
+class Okul(Base, OrtakAlanlar):
+
+    __tablename__ = "okul"
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    okul_adi = Column(
+        String(200),
+        nullable=False
+    )
+
+    egitim_yili = Column(
+        String(20),
+        nullable=False
+    )
+
+    okul_turu = Column(
+        String(100),
+        nullable=False
+    )
+
+    def __repr__(self):
+        return (
+            f"<Okul(id={self.id}, okul_adi='{self.okul_adi}')>"
+        )
 
 # ==========================================================
 # DERS ÇİZELGELERİ
@@ -179,12 +259,21 @@ class DersCizelgesi(Base, OrtakAlanlar):
         nullable=False
     )
 
+    detaylar = relationship(
+        "DersDetay",
+        back_populates="cizelge",
+        cascade="all, delete-orphan"
+    )
+
+    def __repr__(self):
+        return f"<DersCizelgesi('{self.adi}')>"
+
 
 # ==========================================================
 # DERS ÇİZELGESİ DETAYLARI
 # ==========================================================
 
-class DersDetay(Base):
+class DersDetay(Base, OrtakAlanlar):
 
     __tablename__ = "ders_detaylari"
 
@@ -212,15 +301,36 @@ class DersDetay(Base):
 
     haftalik_saat = Column(
         Integer,
-        default=0
+        default=0,
+        nullable=False
     )
 
     teorik = Column(
         Integer,
-        default=0
+        default=0,
+        nullable=False
     )
 
     uygulama = Column(
         Integer,
-        default=0
+        default=0,
+        nullable=False
     )
+
+    cizelge = relationship(
+        "DersCizelgesi",
+        back_populates="detaylar"
+    )
+
+    ders = relationship(
+        "Ders",
+        back_populates="detaylar"
+    )
+
+    def __repr__(self):
+        return (
+            f"<DersDetay("
+            f"sinif={self.sinif}, "
+            f"ders_id={self.ders_id}, "
+            f"saat={self.haftalik_saat})>"
+        )

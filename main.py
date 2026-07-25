@@ -2,12 +2,20 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
+from database.database import veritabani_olustur
 from ui.main_window import MainWindow
 
 
-app = QApplication(sys.argv)
+def main():
+    veritabani_olustur()
 
-window = MainWindow()
-window.show()
+    uygulama = QApplication(sys.argv)
 
-sys.exit(app.exec())
+    pencere = MainWindow()
+    pencere.show()
+
+    sys.exit(uygulama.exec())
+
+
+if __name__ == "__main__":
+    main()
