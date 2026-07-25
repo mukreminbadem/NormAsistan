@@ -251,3 +251,36 @@ def cizelge_detay_ekle(
     session.add(detay)
     session.commit()
     session.close()
+
+# ==================================================
+# BRANŞLAR
+# ==================================================
+
+def branslari_getir():
+
+    session = Session()
+
+    branslar = (
+        session.query(Brans)
+        .filter(Brans.aktif == True)
+        .order_by(Brans.brans_adi)
+        .all()
+    )
+
+    session.close()
+
+    return branslar
+
+
+def brans_ekle(brans_adi):
+
+    session = Session()
+
+    yeni = Brans(
+        brans_adi=brans_adi,
+        aktif=True
+    )
+
+    session.add(yeni)
+    session.commit()
+    session.close()

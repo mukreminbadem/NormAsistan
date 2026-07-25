@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 from ui.okul_page import OkulPage
 from ui.alanlar_page import AlanlarPage
 from ui.subeler_page import SubelerPage
-
+from ui.branslar_page import BranslarPage
 
 class MainWindow(QMainWindow):
 
@@ -36,6 +36,7 @@ class MainWindow(QMainWindow):
         self.menu.addItems([
             "🏫 Okul Bilgileri",
             "📚 Alanlar",
+            "👨‍🏫 Branşlar",
             "👥 Şubeler",
             "📅 Ders Çizelgeleri",
             "➗ Grup Sayıları",
@@ -63,10 +64,12 @@ class MainWindow(QMainWindow):
 
         self.okul = OkulPage()
         self.alanlar = AlanlarPage()
+        self.branslar = BranslarPage()
         self.subeler = SubelerPage()
 
         self.sayfalar.addWidget(self.okul)
         self.sayfalar.addWidget(self.alanlar)
+        self.sayfalar.addWidget(self.branslar)
         self.sayfalar.addWidget(self.subeler)
 
         #################################################
